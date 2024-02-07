@@ -1,0 +1,32 @@
+[package]
+name = "cosprm"
+description = "Adds costume(s) to Ultimate Ninja Storm CONNECTIONS"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "3.2.24", features = ["derive"] }
+
+# used for calculating BZip2 crc32 checksums
+crc = "3.0"
+
+# used for reading and writing Ultimate Ninja Storm CONNECTIONS parameter files
+nuccbin =  { path = "../nuccbin" }
+
+# used for serializing and deserializing JSON
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# used for iterating over enum variants
+strum = "0.21"
+strum_macros = "0.21"
+
+# used for collecting files in a directory
+walkdir = "2.3"
+
+# used for reading and writing Ultimate Ninja Storm CONNECTIONS xfbin files
+xfbin = { path = "../xfbin" }
+
+
