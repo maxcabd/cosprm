@@ -14,8 +14,8 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -j, --json <JSON>
-    -d, --dir <DIR>
+    -j, --json <JSON> The path of the .json that will contain the costume config
+    -d, --dir <DIR>   The path of your data_win32 directory
 
 ARGS:
     <JSON>
