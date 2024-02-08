@@ -8,8 +8,7 @@ use strum::IntoEnumIterator;
 use walkdir::WalkDir;
 use xfbin::{nucc::NuccChunk, read_xfbin, write_xfbin};
 
-const NUCC_BINARY_PATTERNS: [NuccBinaryType; 7] = [
-    NuccBinaryType::PrmBas,
+const NUCC_BINARY_PATTERNS: [NuccBinaryType; 6] = [
     NuccBinaryType::MessageInfo,
     NuccBinaryType::PlayerSettingParam,
     NuccBinaryType::CostumeParam,
@@ -64,18 +63,20 @@ pub fn save_nucc_binaries(
 
             if let Some(nucc_binary_type) = find_nucc_binary_type(&chunk_info.1) {
                 if let Some(nucc_binary) = nucc_binaries.get_mut(&nucc_binary_type) {
-                    let deserializer =
-                        NuccBinaryParsedDeserializer(nucc_binary_type, nucc_binary.serialize());
-                    let writer = NuccBinaryParsedWriter(deserializer.into());
-                    let bytes: Vec<u8> = writer.into();
+                    if NUCC_BINARY_PATTERNS.contains(&nucc_binary_type) {
+                        let deserializer =
+                            NuccBinaryParsedDeserializer(nucc_binary_type, nucc_binary.serialize());
+                        let writer = NuccBinaryParsedWriter(deserializer.into());
+                        let bytes: Vec<u8> = writer.into();
 
-                    // Replace the chunk data with the serialized binary chunk
-                    let mut updated_chunk = chunk.clone();
-                    updated_chunk.size = bytes.len() as u32;
-                    updated_chunk.data = NuccChunk::NuccBinary(bytes.clone());
+                        // Replace the chunk data with the serialized binary chunk
+                        let mut updated_chunk = chunk.clone();
+                        updated_chunk.size = bytes.len() as u32;
+                        updated_chunk.data = NuccChunk::NuccBinary(bytes.clone());
 
-                    // Replace the chunk in the xfbin
-                    updated_chunks.push(updated_chunk);
+                        // Replace the chunk in the xfbin
+                        updated_chunks.push(updated_chunk);
+                    }
                 }
             }
         }

@@ -256,6 +256,7 @@ pub fn add_icon_entry(
             .unwrap();
 
         let mut icon_entry = base_entry.clone();
+
         let not_exist = player_icon.entries.iter().any(|entry| {
             entry.duel_player_param_costume_index == costume.model_index
                 && entry.characode_index == characode_index
@@ -287,19 +288,12 @@ pub fn add_character_select_entry(
     let mut entries = Vec::new();
 
     for costume in cfg.costumes.iter() {
+        //let searchcode = format!("{}00", &costume.characode);
         let base_entry = character_select
             .entries
             .iter_mut()
             .filter(|entry| entry.searchcode.contains(&costume.characode))
-            .max_by_key(|entry| {
-                entry
-                    .searchcode
-                    .chars()
-                    .nth(4)
-                    .unwrap()
-                    .to_digit(10)
-                    .unwrap()
-            })
+            .max_by_key(|entry| entry.costume_slot_index)
             .unwrap();
 
         let mut entry = base_entry.clone();
@@ -320,8 +314,19 @@ pub fn add_character_select_entry(
                     + 1
             )
         );
+
         entry.costume_name = costume.costume_id.clone();
         entry.dictionary_link = "".to_string();
+
+        let not_exist = character_select.entries.iter().any(|e| {
+            e.costume_name == costume.costume_id
+                && e.page_index == entry.page_index
+                && e.slot_index == entry.slot_index
+        });
+
+        if not_exist {
+            continue;
+        }
 
         entries.push(entry.clone());
     }
