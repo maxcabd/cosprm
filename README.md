@@ -1,7 +1,7 @@
 # cosprm
 A tool to batch add new costume entries for Ultimate Ninja Storm CONNECTIONS
 
-Adds entries to (MessageInfo, PlayerSettingParam, CostumeParam PlayerIcon, CharacterSelectParam, and CostumeBreakParam).
+Adds entries to (MessageInfo, PlayerSettingParam, CostumeParam, PlayerIcon, CharacterSelectParam, and CostumeBreakParam).
 
 #  Usage
 ```
