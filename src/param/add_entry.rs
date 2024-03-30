@@ -1,4 +1,3 @@
-use super::calc_crc32;
 use crate::cfg::CostumeAddConfig;
 use nuccbin::{
     nucc_binary::{
@@ -7,9 +6,10 @@ use nuccbin::{
     },
     NuccBinaryType,
 };
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 
-// Here we'll handle adding entries to the message_info
+use super::calc_crc32;
+
 pub fn add_message_info_entry(
     nucc_binaries: &mut HashMap<NuccBinaryType, Box<dyn NuccBinaryParsed>>,
     cfg: &CostumeAddConfig,
@@ -47,14 +47,14 @@ pub fn add_message_info_entry(
         if char_name_exists {
             continue;
         }
-
         entries.push(chara_name_entry.clone());
 
         if !costume_name_exists || costume.costume_name.is_empty() {
             continue;
         }
-
+        
         entries.push(costume_name_entry.clone());
+
     }
 
     message_info.entries.extend(entries);
@@ -132,53 +132,69 @@ pub fn add_costume_entry(
         .downcast_mut::<CostumeParam>()
         .unwrap();
 
-    let mut entries = BTreeMap::new();
+    let mut entries_clone = costume_param.entries.clone();
 
-    for costume in cfg.costumes.iter() {
-        let searchcode = format!("{}00", &costume.characode);
+    let mut highest_costume_link = costume_param
+        .entries
+        .iter()
+        .map(|entry| {
+            entry
+                .costume_link
+                .split("_")
+                .last()
+                .unwrap()
+                .parse::<u32>()
+                .unwrap()
+        })
+        .max()
+        .unwrap_or(0)
+        + 10;
 
-        // Find the base psp entry to get the psp id for the costume entry
+    // before we start, we should order the cfg.costumes by the characode
+    let mut sorted_costumes = cfg.costumes.clone();
+    sorted_costumes.sort_by(|a, b| {
+        a.characode
+            .cmp(&b.characode)
+            .then(b.model_index.cmp(&a.model_index))
+    });
+
+    //let mut color_count = 0;
+
+    for costume in sorted_costumes.iter() {
+        let characode_index = player_setting
+            .entries
+            .iter()
+            .filter(|entry| entry.cha_b_id == costume.cha_id)
+            .map(|entry| entry.characode_index)
+            .next()
+            .unwrap();
+
+        // now get the base psp entry using the characode_index
         let psp_entry = player_setting
             .entries
             .iter()
-            .filter(|entry| entry.searchcode == searchcode)
+            .filter(|entry| entry.characode_index == characode_index)
             .min_by_key(|entry| entry.player_setting_id)
             .unwrap();
 
-        let base_cos_entry = costume_param
-            .entries
+        // We only need the base costume entry to get the index to insert the new entries after it
+        let base_cos_entry = entries_clone
             .iter()
             .filter(|entry| entry.player_setting_id == psp_entry.player_setting_id)
             .max_by_key(|entry| entry.color_index)
+            .unwrap()
+            .clone(); // Clone to avoid borrowing
+
+        let base_entry_index = entries_clone
+            .iter()
+            .position(|entry| entry == &base_cos_entry)
             .unwrap();
 
-        let base_entry_index = costume_param
-            .entries
-            .iter()
-            .position(|entry| entry == base_cos_entry)
-            .unwrap();
-
-        let highest_costume_link: u32 = costume_param
-            .entries
-            .iter()
-            .map(|entry| {
-                entry
-                    .costume_link
-                    .split("_")
-                    .last()
-                    .unwrap()
-                    .parse::<u32>()
-                    .unwrap()
-            })
-            .max()
-            .unwrap_or(0)
-            + 10;
-
-        // we need to find our new psp id we added in the player_setting_param
+        // We need to find our new psp id we added in the player_setting_param
         let highest_psp_id = player_setting
             .entries
             .iter()
-            .filter(|entry| entry.searchcode.contains(&costume.characode))
+            .filter(|entry| entry.cha_b_id == costume.cha_id)
             .map(|entry| entry.player_setting_id)
             .max()
             .unwrap();
@@ -205,13 +221,13 @@ pub fn add_costume_entry(
             cos_entry.costume_link =
                 format!("COSTUME_{:05}", highest_costume_link + (10 * i as u32));
 
-            entries.insert(base_entry_index + 1 + i as usize, cos_entry);
+            entries_clone.insert(base_entry_index + 1 + i as usize, cos_entry);
         }
+
+        highest_costume_link += 10 * costume.color_count as u32;
     }
 
-    for (index, entry) in entries.iter() {
-        costume_param.entries.insert(*index, entry.clone());
-    }
+    costume_param.entries = entries_clone;
 }
 
 pub fn add_icon_entry(
