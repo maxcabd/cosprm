@@ -76,7 +76,36 @@ pub fn add_player_setting_entry(
         .max()
         .unwrap_or_default();
 
-    let entries = cfg
+
+    for costume in cfg.costumes.iter() {
+        //let searchcode = format!("{}00", &costume.characode);
+
+        let base_entry = player_setting
+            .entries
+            .iter_mut()
+            .filter(|entry| entry.searchcode.contains(&costume.characode))
+            .max_by_key(|entry| entry.player_setting_id)
+            .unwrap();
+
+        let mut entry = base_entry.clone();
+
+        entry.player_setting_id = highest_id + 1;
+        entry.duel_player_param_model_index = costume.model_index;
+
+        entry.searchcode = format!(
+            "{}{:02}",
+            &entry.searchcode.chars().take(4).collect::<String>(),
+            entry.searchcode.chars().nth(5).unwrap().to_digit(10).unwrap() + 1
+        );
+
+        entry.cha_b_id = costume.cha_id.clone();
+
+        highest_id += 1; // Increment the highest id for the next entry
+
+        player_setting.entries.push(entry);
+    }
+
+    /*let entries = cfg
         .costumes
         .iter()
         .filter_map(|costume| {
@@ -92,15 +121,20 @@ pub fn add_player_setting_entry(
                     .iter_mut()
                     .filter(|entry| entry.searchcode.contains(&costume.characode))
                     .max_by_key(|entry| entry.player_setting_id)?;
+                
+                println!("{:#?}", base_entry);
 
                 let mut entry = base_entry.clone();
+
                 entry.player_setting_id = highest_id + 1;
                 entry.duel_player_param_model_index = costume.model_index;
+
                 entry.searchcode = format!(
                     "{}{:02}",
                     &entry.searchcode.chars().take(4).collect::<String>(),
                     entry.searchcode.chars().nth(5)?.to_digit(10)? + 1
                 );
+
                 entry.cha_b_id = costume.cha_id.clone();
 
                 highest_id += 1; // Increment the highest id for the next entry
@@ -108,9 +142,9 @@ pub fn add_player_setting_entry(
                 Some(entry)
             }
         })
-        .collect::<Vec<_>>();
+        .collect::<Vec<_>>();*/
 
-    player_setting.entries.extend(entries);
+    //player_setting.entries.extend(entries);
 }
 
 pub fn add_costume_entry(
