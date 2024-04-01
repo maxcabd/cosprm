@@ -31,12 +31,24 @@ Here is the format of the .json file that's required:
             "characode": "3mnt",
             "modelcode": "nmnc",
             "iconcode": "mnt3",
-            "cha_id": "c_cha_999",
+            "cha_id": "c_cha_997",
             "char_name": "Minato Namikaze (w/o Cloak)",
             "costume_id": "c_costume_011",
-            "costume_name": "(w/o Cloak)",
+            "costume_name": "w/o Cloak",
             "color_count": 2,
             "has_costume_break": false
+        },
+        {   
+            "model_index": 2,
+            "characode": "3ngt",
+            "modelcode": "nngt",
+            "iconcode": "ngt1",
+            "cha_id": "c_cha_998",
+            "char_name": "Nagato (Akatsuki Costume)",
+            "costume_id": "c_costume_035",
+            "costume_name": "Akatsuki Costume",
+            "color_count": 4,
+            "has_costume_break": true
         }
     ]
 }
